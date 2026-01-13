@@ -1,11 +1,13 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    qdrant_url: str = "http://localhost:6333"
+    qdrant_url: str
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="forbid",
+    )
 
 
-settings = Settings()
+settings = Settings()  # pyright: ignore[reportCallIssue]
