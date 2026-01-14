@@ -33,6 +33,7 @@ yarn-error.log*
 Thumbs.db
 *.log
 *.local
+backend/app/debug/sample.txt
 
 # IDEs & Editors
 .vscode/

@@ -1,30 +1,44 @@
+import uuid
+
 from qdrant_client import QdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
-from qdrant_client.models import Distance, VectorParams
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 from app.core.config import settings
 from app.core.constants import COLLECTION_NAME, EMBEDDING_DIM
+from app.embeddings.minilm import embed
 
 _client: QdrantClient | None = None
+_collection_checked = False
 
 
 def get_qdrant_client() -> QdrantClient:
-    global _client
+    global _client, _collection_checked
 
     if _client is None:
         _client = QdrantClient(url=settings.qdrant_url)
+
+    if not _collection_checked:
+        ensure_collection_exists(
+            client=_client,
+            collection_name=COLLECTION_NAME,
+            vector_size=EMBEDDING_DIM,
+        )
+        _collection_checked = True
 
     return _client
 
 
 def ping_qdrant() -> None:
     client = get_qdrant_client()
-    # client.get_collections()
-    ensure_collection_exists(
-        client=client,
-        collection_name=COLLECTION_NAME,
-        vector_size=EMBEDDING_DIM,
-    )
+
+
+def _assert_embedding_dim():
+    vec = embed("dim check")
+    if len(vec) != EMBEDDING_DIM:
+        raise RuntimeError(
+            f"Embedding dim mismatch: expected {EMBEDDING_DIM}, got {len(vec)}"
+        )
 
 
 def ensure_collection_exists(
@@ -44,3 +58,53 @@ def ensure_collection_exists(
             distance=Distance.COSINE,
         ),
     )
+
+
+def search_text(query: str, limit: int = 5):
+    client: QdrantClient = get_qdrant_client()
+    query_vector = embed(text=query)
+
+    search_results = client.query_points(
+        collection_name=COLLECTION_NAME,
+        query=query_vector,
+        limit=limit,
+        with_vectors=False,
+    )
+
+    return [
+        {
+            "score": p.score,
+            "text": p.payload["text"],
+            "source": p.payload["source"],
+        }
+        for p in search_results.points
+    ]
+
+
+def ingest_data(docs: list):
+    client: QdrantClient = get_qdrant_client()
+    points = []
+    for doc in docs:
+        text = doc["text"]
+        doc_id = doc["doc_id"]
+        chunk_id = doc["chunk_id"]
+
+        points.append(
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=embed(text),
+                payload={
+                    "text": text,
+                    "source": "debug",
+                    "doc_id": doc_id,
+                    "chunk_id": chunk_id,
+                },
+            )
+        )
+
+    client.upsert(
+        collection_name=COLLECTION_NAME,
+        points=points,
+    )
+
+    return client.get_collection(COLLECTION_NAME)
