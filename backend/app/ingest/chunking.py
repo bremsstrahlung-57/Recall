@@ -1,9 +1,9 @@
-def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100):
-    if overlap >= chunk_size:
-        raise ValueError("overlap must be smaller than chunk size")
+def chunk_text(text: str, chunk_size: int = 512, overlap: int = 128):
+    """Chunk text"""
+    if len(text) <= chunk_size:
+        return [text]
 
     chunks = []
-    step = chunk_size - overlap
     start = 0
     chunk_id = 0
 
@@ -19,6 +19,6 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 100):
         )
 
         chunk_id += 1
-        start += step
-
+        start += chunk_size - overlap
+    
     return chunks
