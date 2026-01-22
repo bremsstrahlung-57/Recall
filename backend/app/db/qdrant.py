@@ -1,3 +1,4 @@
+import statistics
 import uuid
 
 from qdrant_client import QdrantClient
@@ -86,12 +87,16 @@ def search_chunks(query: str, limit: int = 5):
 
         if doc_id not in doc_score_map:
             doc_score_map[doc_id] = {
-                "score": score,
+                "max_score": score,
                 "text": text,
                 "chunk_id": chunk_id,
+                "all_scores": [score],
             }
         else:
-            doc_score_map[doc_id]["score"] = max(doc_score_map[doc_id]["score"], score)
+            doc_score_map[doc_id]["max_score"] = max(
+                doc_score_map[doc_id]["max_score"], score
+            )
+            doc_score_map[doc_id]["all_scores"].append(score)
             if chunk_id != doc_score_map[doc_id]["chunk_id"]:
                 doc_score_map[doc_id]["chunk_id"] = chunk_id
                 doc_score_map[doc_id]["text"] = text
@@ -102,24 +107,37 @@ def search_chunks(query: str, limit: int = 5):
     for row in doc_db:
         doc_id = row[0]
         if doc_id in doc_score_map:
+            scores = doc_score_map[doc_id]["all_scores"]
+            mean = statistics.mean(scores)
+            median = statistics.median(scores)
+            mode = statistics.median(scores)
+            top3_score = statistics.mean(scores[:3])
             results.append(
                 {
                     "doc_id": doc_id,
-                    "score": doc_score_map[doc_id]["score"],
+                    "score": top3_score,
+                    "max_score": doc_score_map[doc_id]["max_score"],
                     "content": row[1],
                     "max_chunk_text": doc_score_map[doc_id]["text"],
                     "source": row[2],
                     "total_chunks": row[3],
                     "chunk_id": doc_score_map[doc_id]["chunk_id"],
                     "created_at": row[4],
+                    "all_scores": scores,
+                    "stats": {
+                        "mean": mean,
+                        "median": median,
+                        "mode": mode,
+                    },
                 }
             )
 
     results.sort(key=lambda item: item["score"], reverse=True)
-    return results
+    final_res = list(filter(lambda d: d.get("score") > 0.35, results))
+    return final_res
 
 
-def ingest_data(docs: list):
+def ingest_data(docs):
     """Upsert data in Vector DB"""
     client: QdrantClient = get_qdrant_client()
     points = []
