@@ -1,6 +1,6 @@
-from app.db.qdrant import search_chunks
+from app.db.qdrant import search_docs
 
-# from app.debug.ingestion import ingest_file
+# from app.ingest.ingestion import ingest_file
 
 # paths = [
 # "app/debug/samples/eldenring.txt",
@@ -25,9 +25,12 @@ from app.db.qdrant import search_chunks
 
 query = input("Enter Query: ")
 limit = int(input("Enter Limit: "))
-results = search_chunks(query, limit)
+results = search_docs(query, limit)
 
 print(f"Query: {query}")
+
+if results == []:
+    print("Couldn't find any matching data related to your query :(")
 
 for i in results:
     doc_id = i["doc_id"]

@@ -1,0 +1,22 @@
+[
+    {
+        "query": "potion crafting",
+        "expected": [
+            "1c6d7ffee921dd47d72bc11a3cf91642223eecfee0d60c70f0d18ae523151964"
+        ]
+    },
+    {
+        "query": "souls like game set in japan",
+        "expected": [
+            "37daa4bacd7ef4c2c9779b6c1917a25891cf8ea5eeffe4204c73978f2628be18"
+        ]
+    },
+    {
+        "query": "rpg",
+        "expected": [
+            "84169cf17fdd3b8b6a8a7f51ad0cbaba119e0817a78a5fc7e19cf379a9633b9f",
+            "cc5e7bd8fd2d0160a2dcb9bee90afb17f4e9ccb8791e1888c0c1450720b4da8a",
+            "561c5e2415586a138733becd1cfd67ab8bbcbcc8e1013fefffadca75968cf8a4"
+        ]
+    }
+]

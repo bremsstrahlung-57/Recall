@@ -3,7 +3,8 @@
 Recall is a personal knowledge retrieval tool.
 Users can upload files, text, and bookmarks and search them later using semantic search instead of exact filenames or keywords, or going to different websites or digging in folders.
 
-## Current Version - 0.2.0
+## Current Version - 0.2.1
+
 `❯ uv run app/debug/vector_roundtrip.py`
 
 `Enter Query: souls like set in japan`
