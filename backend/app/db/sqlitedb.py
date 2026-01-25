@@ -1,7 +1,8 @@
-from datetime import datetime
 import os
 import sqlite3
-from app.core.constants import CACHE_PATH, CACHE_FILE_PATH
+from datetime import datetime
+
+from app.core.constants import CACHE_FILE_PATH, CACHE_PATH
 
 
 def make_cache_folder():
@@ -17,8 +18,9 @@ def make_cache_folder():
 
 class SQLiteDB:
     """All functions related to SQLite Database storing user docs and all other important metadata"""
+
     def __init__(self) -> None:
-        self.connection = sqlite3.connect(CACHE_FILE_PATH)
+        self.connection = sqlite3.connect(CACHE_FILE_PATH, check_same_thread=False)
         self.cursor = self.connection.cursor()
         self.now = datetime.now()
 
@@ -31,16 +33,21 @@ class SQLiteDB:
         created_at TEXT
         );""")
 
-    def insert_doc_ib_db(self, doc_id:str, content:str, source: str, total_chunks:int) -> None:
+    def insert_doc_ib_db(
+        self, doc_id: str, content: str, source: str, total_chunks: int
+    ) -> None:
         """Save full doc and other metadata in the SQLite DB"""
         make_cache_folder()
         _doc_id = doc_id
         iso_format = self.now.strftime("%Y-%m-%d %H:%M:%S")
 
-        self.cursor.execute("""
+        self.cursor.execute(
+            """
         INSERT OR REPLACE INTO documents (doc_id, content, source, total_chunks, created_at)
         VALUES(?, ?, ?, ?, ?)
-        """, (doc_id, content, source, total_chunks, iso_format))
+        """,
+            (doc_id, content, source, total_chunks, iso_format),
+        )
 
         self.connection.commit()
 
@@ -50,4 +57,3 @@ class SQLiteDB:
         rows = self.cursor.fetchall()
 
         return rows
-    

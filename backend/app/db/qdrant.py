@@ -65,7 +65,7 @@ def ensure_collection_exists(
     )
 
 
-def search_docs(query, limit=5):
+def search_docs(query, limit=5) -> list:
     """Search for a query from the Vector DB"""
     client: QdrantClient = get_qdrant_client()
     query_vector = embed(text=query)
@@ -116,19 +116,19 @@ def search_docs(query, limit=5):
                 {
                     "doc_id": doc_id,
                     "score": top3_score,
-                    # "max_score": doc_score_map[doc_id]["max_score"],
+                    "max_score": doc_score_map[doc_id]["max_score"],
                     "content": row[1],
-                    # "max_chunk_text": doc_score_map[doc_id]["text"],
+                    "max_chunk_text": doc_score_map[doc_id]["text"],
                     "source": row[2],
-                    # "total_chunks": row[3],
-                    # "chunk_id": doc_score_map[doc_id]["chunk_id"],
+                    "total_chunks": row[3],
+                    "chunk_id": doc_score_map[doc_id]["chunk_id"],
                     "created_at": row[4],
-                    # "all_scores": scores,
-                    # "stats": {
-                    # "mean": mean,
-                    # "median": median,
-                    # "mode": mode,
-                    # },
+                    "all_scores": scores,
+                    "stats": {
+                        "mean": mean,
+                        "median": median,
+                        "mode": mode,
+                    },
                 }
             )
 
