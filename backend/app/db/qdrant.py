@@ -2,6 +2,7 @@ import statistics
 import uuid
 
 from qdrant_client import QdrantClient
+from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
@@ -205,3 +206,27 @@ def ingest_data(docs):
     )
 
     return client.get_collection(COLLECTION_NAME)
+
+
+def fetch_chunk_by_ids(doc_id, chunk_ids):
+    client = get_qdrant_client()
+
+    result = client.scroll(
+        collection_name=COLLECTION_NAME,
+        scroll_filter=models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="doc_id",
+                    match=models.MatchValue(value=doc_id),
+                ),
+                models.FieldCondition(
+                    key="chunk_id",
+                    match=models.MatchAny(any=chunk_ids),
+                ),
+            ]
+        ),
+        with_vectors=False,
+        limit=len(chunk_ids),
+    )
+    points, _ = result
+    return points

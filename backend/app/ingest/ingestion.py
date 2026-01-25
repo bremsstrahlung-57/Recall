@@ -17,7 +17,7 @@ def ingest_file(path: str, source="user"):
     total_chunks = chunks[-1].get("chunk_id", 0) + 1
     db_action.insert_doc_ib_db(
         doc_id=doc_id,
-        title=title,
+        title=title.strip(),
         content=text,
         source=source,
         total_chunks=total_chunks,

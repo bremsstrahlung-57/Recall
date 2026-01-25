@@ -2,7 +2,7 @@ from tqdm import tqdm
 
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
-from app.retrieval.retrieve import retrieve_data
+from app.retrieval.retrieve import refine_results, retrieve_data
 
 paths = [
     "app/debug/samples/eldenring.txt",
@@ -24,50 +24,59 @@ paths = [
 ]
 
 
-def debug_ingest_file():
-    for path in tqdm(paths, desc="Ingesting files", total=len(paths)):
-        ingest_file(path)
+class Debug:
+    def __init__(self, query, limit=5, k=3):
+        self.query = query
+        self.limit = limit
+        self.k = k
 
+    def debug_ingest_file(self):
+        for path in tqdm(paths, desc="Ingesting files", total=len(paths)):
+            ingest_file(path)
 
-def debug_search_docs(query, limit):
-    results = search_docs(query, limit)
-    if results == []:
-        print("Couldn't find any matching data related to your query :(")
-    for i in results:
-        doc_id = i["doc_id"]
-        score = i["score"]
-        max_score = i["max_score"]
-        source = i["source"]
-        title = i["title"]
-        doc = i["content"][:100] + "..."
-        chunk_doc = i["max_chunk_text"][:100] + "..."
-        chunk_id = i["chunk_id"]
-        total_chunks = i["total_chunks"]
-        chunks = i["all_chunks"]
-        created_at = i["created_at"]
-        all_scores = i["all_scores"]
-        stats = i["stats"]
+    def debug_search_docs(self):
+        print("DEBUG SEARCH DOCS: \n")
+        results = search_docs(self.query, self.limit)
+        if results == []:
+            print("Couldn't find any matching data related to your query :(")
+        for i in results:
+            doc_id = i["doc_id"]
+            score = i["score"]
+            max_score = i["max_score"]
+            source = i["source"]
+            title = i["title"]
+            doc = i["content"][:100] + "..."
+            chunk_doc = i["max_chunk_text"][:100] + "..."
+            chunk_id = i["chunk_id"]
+            total_chunks = i["total_chunks"]
+            chunks = i["all_chunks"]
+            created_at = i["created_at"]
+            all_scores = i["all_scores"]
+            stats = i["stats"]
 
-        print(
-            f"Doc ID: {doc_id}\nScore: {score:.4f}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nStats: {stats}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nTop Chunks: {chunks}\nCreated At: {created_at}\n"
-        )
+            print(
+                f"Doc ID: {doc_id}\nScore: {score:.4f}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nStats: {stats}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nTop Chunks: {chunks}\nCreated At: {created_at}\n"
+            )
 
+    def debug_retrieve_data(self):
+        print("\nDEBUG RETRIEVE DATA: \n")
+        res = retrieve_data(self.query, self.limit)
+        print(res)
 
-def debug_retrieve_data(query, limit):
-    res = retrieve_data(query, limit)
-    print(res)
+    def debug_refine_results(self):
+        result = search_docs(self.query, self.limit)
+        print(refine_results(result))
 
 
 def main():
     # debug_ingest_file()
-    # query = input("Enter Query: ")
-    # limit = int(input("Enter Limit: "))
-    # print(f"\nQuery: {query}")
-    # print("DEBUG SEARCH DOCS: \n")
-    # debug_search_docs(query, limit)
-    # print("\nDEBUG RETRIEVE DATA: \n")
-    # debug_retrieve_data(query, limit)
-    print("HELLO ^_^")
+    query = input("Enter Query: ")
+    limit = int(input("Enter Limit: "))
+    # query = "rpg"
+    # limit = 5
+    debug_instance = Debug(query, limit)
+    print(f"\nQuery: {query}")
+    debug_instance.debug_refine_results()
 
 
 if __name__ == "__main__":
