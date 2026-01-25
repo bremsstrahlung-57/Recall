@@ -1,32 +1,38 @@
 from pathlib import Path
 
 from app.db.qdrant import ingest_data
+from app.db.sqlitedb import SQLiteDB
 from app.ingest.chunking import chunk_text
 from app.ingest.doc_id import make_doc_id
-from app.db.sqlitedb import SQLiteDB
 
 db_action = SQLiteDB()
 
-def ingest_file(path: str):
+
+def ingest_file(path: str, source="user"):
     """File ingestion for Vector DB"""
     text = Path(path).read_text(encoding="utf-8")
+    title = Path(path).stem
     doc_id = make_doc_id(text)
     chunks = chunk_text(text)
     total_chunks = chunks[-1].get("chunk_id", 0) + 1
     db_action.insert_doc_ib_db(
-        doc_id=doc_id, content=text, source="user", total_chunks=total_chunks
+        doc_id=doc_id,
+        title=title,
+        content=text,
+        source=source,
+        total_chunks=total_chunks,
     )
 
     docs = []
     for c in chunks:
         docs.append(
             {
-                "text": c["text"],
                 "doc_id": doc_id,
+                "text": c["text"],
                 "chunk_id": c["chunk_id"],
             }
         )
-    
+
     ingest_data(docs)
 
 
@@ -39,8 +45,8 @@ def ingest_text(text: str):
     for c in chunks:
         docs.append(
             {
-                "text": c["text"],
                 "doc_id": doc_id,
+                "text": c["text"],
                 "chunk_id": c["chunk_id"],
             }
         )

@@ -65,7 +65,7 @@ def ensure_collection_exists(
     )
 
 
-def search_docs(query, limit=5) -> list:
+def search_docs(query, limit=5, k=3):
     """Search for a query from the Vector DB"""
     client: QdrantClient = get_qdrant_client()
     query_vector = embed(text=query)
@@ -91,15 +91,29 @@ def search_docs(query, limit=5) -> list:
                 "text": text,
                 "chunk_id": chunk_id,
                 "all_scores": [score],
+                "chunks": [
+                    {
+                        "chunk_id": chunk_id,
+                        "text": text,
+                        "score": score,
+                    }
+                ],
             }
         else:
             doc_score_map[doc_id]["max_score"] = max(
                 doc_score_map[doc_id]["max_score"], score
             )
             doc_score_map[doc_id]["all_scores"].append(score)
-            if chunk_id != doc_score_map[doc_id]["chunk_id"]:
-                doc_score_map[doc_id]["chunk_id"] = chunk_id
-                doc_score_map[doc_id]["text"] = text
+            if not any(
+                c["chunk_id"] == chunk_id for c in doc_score_map[doc_id]["chunks"]
+            ):
+                doc_score_map[doc_id]["chunks"].append(
+                    {
+                        "chunk_id": chunk_id,
+                        "text": text,
+                        "score": score,
+                    }
+                )
 
     doc_db = doc_database.read_from_cache()
     results = []
@@ -107,22 +121,42 @@ def search_docs(query, limit=5) -> list:
     for row in doc_db:
         doc_id = row[0]
         if doc_id in doc_score_map:
-            scores = doc_score_map[doc_id]["all_scores"]
+            chunks = doc_score_map[doc_id]["chunks"]
+
+            sorted_chunks = sorted(
+                chunks,
+                key=lambda c: c["score"],
+                reverse=True,
+            )
+            topk_chunks = [
+                {
+                    "chunk_id": c["chunk_id"],
+                    "score": c["score"],
+                    "text": c["text"],
+                }
+                for c in sorted_chunks[:k]
+            ]
+
+            best_chunk = topk_chunks[0]
+            scores = [c["score"] for c in chunks]
             mean = statistics.mean(scores)
             median = statistics.median(scores)
             mode = statistics.median(scores)
-            top3_score = statistics.mean(scores[:3])
+            topk_score = statistics.mean(scores[:k])
+
             results.append(
                 {
                     "doc_id": doc_id,
-                    "score": top3_score,
-                    "max_score": doc_score_map[doc_id]["max_score"],
-                    "content": row[1],
-                    "max_chunk_text": doc_score_map[doc_id]["text"],
-                    "source": row[2],
-                    "total_chunks": row[3],
-                    "chunk_id": doc_score_map[doc_id]["chunk_id"],
-                    "created_at": row[4],
+                    "score": topk_score,
+                    "max_score": best_chunk["score"],
+                    "title": row[1],
+                    "content": row[2],
+                    "max_chunk_text": best_chunk["text"],
+                    "source": row[3],
+                    "total_chunks": row[4],
+                    "chunk_id": best_chunk["chunk_id"],
+                    "all_chunks": topk_chunks,
+                    "created_at": row[5],
                     "all_scores": scores,
                     "stats": {
                         "mean": mean,

@@ -1,3 +1,5 @@
+from tqdm import tqdm
+
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
 from app.retrieval.retrieve import retrieve_data
@@ -23,7 +25,7 @@ paths = [
 
 
 def debug_ingest_file():
-    for path in paths:
+    for path in tqdm(paths, desc="Ingesting files", total=len(paths)):
         ingest_file(path)
 
 
@@ -36,16 +38,18 @@ def debug_search_docs(query, limit):
         score = i["score"]
         max_score = i["max_score"]
         source = i["source"]
+        title = i["title"]
         doc = i["content"][:100] + "..."
         chunk_doc = i["max_chunk_text"][:100] + "..."
         chunk_id = i["chunk_id"]
         total_chunks = i["total_chunks"]
+        chunks = i["all_chunks"]
         created_at = i["created_at"]
         all_scores = i["all_scores"]
         stats = i["stats"]
 
         print(
-            f"Doc ID: {doc_id}\nScore: {score:.4f}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nStats: {stats}\nSource: {source}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nCreated At: {created_at}\n"
+            f"Doc ID: {doc_id}\nScore: {score:.4f}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nStats: {stats}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nTop Chunks: {chunks}\nCreated At: {created_at}\n"
         )
 
 
@@ -55,10 +59,15 @@ def debug_retrieve_data(query, limit):
 
 
 def main():
-    query = input("Enter Query: ")
-    limit = int(input("Enter Limit: "))
-    print(f"Query: {query}")
-    debug_retrieve_data(query, limit)
+    # debug_ingest_file()
+    # query = input("Enter Query: ")
+    # limit = int(input("Enter Limit: "))
+    # print(f"\nQuery: {query}")
+    # print("DEBUG SEARCH DOCS: \n")
+    # debug_search_docs(query, limit)
+    # print("\nDEBUG RETRIEVE DATA: \n")
+    # debug_retrieve_data(query, limit)
+    print("HELLO ^_^")
 
 
 if __name__ == "__main__":
