@@ -4,24 +4,30 @@ from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
 from app.retrieval.retrieve import refine_results, retrieve_data
 
-paths = [
-    "app/debug/samples/eldenring.txt",
-    "app/debug/samples/recipe.txt",
-    "app/debug/samples/sample.txt",
-    "app/debug/samples/bloodborne.txt",
-    "app/debug/samples/cp2077.txt",
-    "app/debug/samples/doom.txt",
-    "app/debug/samples/food.txt",
-    "app/debug/samples/gow.txt",
-    "app/debug/samples/history1.txt",
-    "app/debug/samples/history2.txt",
-    "app/debug/samples/hollow_knight.txt",
-    "app/debug/samples/rdr2.txt",
-    "app/debug/samples/recipe.txt",
-    "app/debug/samples/sekiro.txt",
-    "app/debug/samples/space.txt",
-    "app/debug/samples/witcher3.txt",
-]
+
+def debug_ingest_file():
+    paths = [
+        "app/debug/samples/eldenring.txt",
+        "app/debug/samples/recipe.txt",
+        "app/debug/samples/sample.txt",
+        "app/debug/samples/bloodborne.txt",
+        "app/debug/samples/cp2077.txt",
+        "app/debug/samples/doom.txt",
+        "app/debug/samples/food.txt",
+        "app/debug/samples/gow.txt",
+        "app/debug/samples/history1.txt",
+        "app/debug/samples/history2.txt",
+        "app/debug/samples/hollow_knight.txt",
+        "app/debug/samples/rdr2.txt",
+        "app/debug/samples/recipe.txt",
+        "app/debug/samples/sekiro.txt",
+        "app/debug/samples/space.txt",
+        "app/debug/samples/witcher3.txt",
+        "app/debug/samples/ds3.txt",
+    ]
+
+    for path in tqdm(paths, desc="Ingesting files", total=len(paths)):
+        ingest_file(path)
 
 
 class Debug:
@@ -29,10 +35,6 @@ class Debug:
         self.query = query
         self.limit = limit
         self.k = k
-
-    def debug_ingest_file(self):
-        for path in tqdm(paths, desc="Ingesting files", total=len(paths)):
-            ingest_file(path)
 
     def debug_search_docs(self):
         print("DEBUG SEARCH DOCS: \n")
@@ -49,13 +51,12 @@ class Debug:
             chunk_doc = i["max_chunk_text"][:100] + "..."
             chunk_id = i["chunk_id"]
             total_chunks = i["total_chunks"]
-            chunks = i["all_chunks"]
             created_at = i["created_at"]
             all_scores = i["all_scores"]
             stats = i["stats"]
 
             print(
-                f"Doc ID: {doc_id}\nScore: {score:.4f}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nStats: {stats}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nTop Chunks: {chunks}\nCreated At: {created_at}\n"
+                f"Doc ID: {doc_id}\nScore: {score:.4f}\nMax Score: {max_score:.4f}\nAll Scores: {all_scores}\nStats: {stats}\nSource: {source}\nTitle: {title}\nDoc: {doc}\nChunk Doc: {chunk_doc}\nChunk ID: {chunk_id}\nTotal Chunks: {total_chunks}\nCreated At: {created_at}\n"
             )
 
     def debug_retrieve_data(self):
@@ -65,7 +66,11 @@ class Debug:
 
     def debug_refine_results(self):
         result = search_docs(self.query, self.limit)
-        print(refine_results(result))
+        x = refine_results(result)
+        # for i in x:
+        #     print(i["context"])
+        # print(refine_results(result))
+        print(x)
 
 
 def main():
@@ -77,6 +82,7 @@ def main():
     debug_instance = Debug(query, limit)
     print(f"\nQuery: {query}")
     debug_instance.debug_refine_results()
+    # debug_instance.debug_search_docs()
 
 
 if __name__ == "__main__":

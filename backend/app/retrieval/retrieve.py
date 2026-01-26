@@ -1,8 +1,8 @@
 from app.db.qdrant import fetch_chunk_by_ids, search_docs
 
 
-def retrieve_data(query: str, limit: int):
-    original_data = search_docs(query, limit)
+def retrieve_data(query: str, limit: int, k: int = 3):
+    original_data = search_docs(query, limit, k)
     context_data = []
 
     for item in original_data:
@@ -40,12 +40,14 @@ def get_evidence_chunks(all_chunks):
 def build_context(doc_id, evidence, total_chunks):
     hit_ids = [e["chunk_id"] for e in evidence]
     window_ids = expand_chunk_ids(hit_ids, total_chunks)
+    window_ids = list(set(window_ids))
 
     points = fetch_chunk_by_ids(doc_id, window_ids)
-
     points.sort(key=lambda p: p.payload["chunk_id"])
-
-    return "\n".join(p.payload["text"] for p in points)
+    context_list = set()
+    for p in points:
+        context_list.add(p.payload["text"])
+    return list(context_list)
 
 
 def refine_results(results):

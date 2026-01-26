@@ -15,9 +15,10 @@ def health_check():
 def search_api(
     query: str = Query(..., min_length=3),
     limit: int = Query(5, ge=1, le=50),
+    k: int = Query(3, ge=1, le=5),
     debug: bool = Query(False),
 ):
     if debug:
-        return search_docs(query, limit)
+        return search_docs(query, limit, k)
     else:
-        return retrieve_data(query, limit)
+        return retrieve_data(query, limit, k)

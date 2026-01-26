@@ -186,10 +186,11 @@ def ingest_data(docs):
         text = doc["text"]
         doc_id = doc["doc_id"]
         chunk_id = doc["chunk_id"]
+        point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{doc_id}_{chunk_id}"))
 
         points.append(
             PointStruct(
-                id=str(uuid.uuid4()),
+                id=point_id,
                 vector=embed(text),
                 payload={
                     "text": text,
