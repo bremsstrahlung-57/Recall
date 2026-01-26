@@ -2,7 +2,7 @@ from tqdm import tqdm
 
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
-from app.retrieval.retrieve import refine_results, retrieve_data
+from app.retrieval.retrieve import refine_results, retrieve_data, llm_context_builder
 
 
 def debug_ingest_file():
@@ -62,15 +62,16 @@ class Debug:
     def debug_retrieve_data(self):
         print("\nDEBUG RETRIEVE DATA: \n")
         res = retrieve_data(self.query, self.limit)
-        print(res)
+        return res
 
     def debug_refine_results(self):
         result = search_docs(self.query, self.limit)
-        x = refine_results(result)
-        # for i in x:
-        #     print(i["context"])
-        # print(refine_results(result))
-        print(x)
+        return refine_results(result)
+
+    def debug_llm_context_builder(self):
+        result = search_docs(self.query, self.limit)
+        ref_result = refine_results(result)
+        return llm_context_builder(self.query, ref_result)
 
 
 def main():
@@ -78,11 +79,12 @@ def main():
     query = input("Enter Query: ")
     limit = int(input("Enter Limit: "))
     # query = "rpg"
-    # limit = 5
+    # limit = 3
     debug_instance = Debug(query, limit)
     print(f"\nQuery: {query}")
-    debug_instance.debug_refine_results()
-    # debug_instance.debug_search_docs()
+    print(debug_instance.debug_llm_context_builder())
+    # print(debug_instance.debug_refine_results())
+    # print(debug_instance.debug_search_docs())
 
 
 if __name__ == "__main__":

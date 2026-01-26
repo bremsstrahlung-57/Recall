@@ -57,6 +57,7 @@ def refine_results(results):
         doc_id = item["doc_id"]
         title = item["title"]
         source = item["source"]
+        score = item["score"]
         chunks = item["all_chunks"]
         total_chunks = item["total_chunks"]
 
@@ -70,6 +71,7 @@ def refine_results(results):
             {
                 "doc_id": doc_id,
                 "title": title,
+                "score": score,
                 "source": source,
                 "context": context,
                 "evidence": [
@@ -79,3 +81,22 @@ def refine_results(results):
         )
 
     return refined_for_context
+
+def llm_context_builder(query, refined_result):
+    ref_res = refined_result
+    llm_context = {"query": query, "context":[]}
+    for res in ref_res:
+        title = res["title"]
+        score = res["score"]
+        source = res["source"]
+        chunks = res["context"]
+        llm_context["context"].append(
+            {
+                "title":title,
+                "score":score,
+                "source":source,
+                "chunks":chunks,
+            }
+        )
+
+    return llm_context
