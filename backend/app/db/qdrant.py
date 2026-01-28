@@ -6,8 +6,8 @@ from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
-from app.core.config import settings
 from app.core.constants import COLLECTION_NAME, EMBEDDING_DIM
+from app.core.settings import settings
 from app.db.sqlitedb import SQLiteDB
 from app.embeddings.minilm import embed
 

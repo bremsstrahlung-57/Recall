@@ -82,9 +82,10 @@ def refine_results(results):
 
     return refined_for_context
 
+
 def llm_context_builder(query, refined_result):
     ref_res = refined_result
-    llm_context = {"query": query, "context":[]}
+    llm_context = {"query": query, "context": []}
     for res in ref_res:
         title = res["title"]
         score = res["score"]
@@ -92,11 +93,18 @@ def llm_context_builder(query, refined_result):
         chunks = res["context"]
         llm_context["context"].append(
             {
-                "title":title,
-                "score":score,
-                "source":source,
-                "chunks":chunks,
+                "title": title,
+                "score": score,
+                "source": source,
+                "chunks": chunks,
             }
         )
 
     return llm_context
+
+
+def GenerateLLMContext(query, limit=5, k=3):
+    searched_docs = search_docs(query, limit, k)
+    refined_result = refine_results(searched_docs)
+    generated_context = llm_context_builder(query, refined_result)
+    return generated_context

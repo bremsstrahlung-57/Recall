@@ -1,0 +1,52 @@
+from app.llm.factory import LLMFactory
+from app.retrieval.retrieve import GenerateLLMContext
+
+
+class LLMGeneration:
+    def generate(
+        self,
+        provider: str,
+        prompt: str,
+        api_key: str | None = None,
+        model: str | None = None,
+    ):
+        llm = LLMFactory.create(provider=provider, api_key=api_key, model=model)
+
+        return llm.generate(prompt)
+
+
+def prompt_generation(query):
+    context = GenerateLLMContext(query)
+    prompt = [
+        "Query:",
+        query,
+        "Context:",
+        "The following is a list of text chunks retrieved from documents.",
+        "Each chunk is independent and may overlap.",
+    ]
+    for res in context["context"]:
+        title = res["title"]
+        score = res["score"]
+        source = res["source"]
+        chunks = res["chunks"]
+        chunk = f"Title: {title} | Score: {score} | Source: {source}\nText/Docs/Chunks: {chunks}\n"
+        prompt.append(chunk)
+
+    prompt.append("""Task:
+Using only the information in the context above, answer the query.
+Do not add information that is not present.
+Do not explain why an answer is correct. Only state the answer itself.""")
+
+    return "\n".join(prompt)
+
+
+def llm_provider():
+    print("API Available\n1.Gemini\n2.LLama(Groq)")
+    num = int(input("Choose provider: "))
+    match num:
+        case 1:
+            return "gemini"
+        case 2:
+            return "groq"
+        case _:
+            return "groq"

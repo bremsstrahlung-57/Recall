@@ -2,7 +2,13 @@ from tqdm import tqdm
 
 from app.db.qdrant import search_docs
 from app.ingest.ingestion import ingest_file
-from app.retrieval.retrieve import refine_results, retrieve_data, llm_context_builder
+from app.llm.generation import LLMGeneration, llm_provider, prompt_generation
+from app.retrieval.retrieve import (
+    GenerateLLMContext,
+    llm_context_builder,
+    refine_results,
+    retrieve_data,
+)
 
 
 def debug_ingest_file():
@@ -73,18 +79,30 @@ class Debug:
         ref_result = refine_results(result)
         return llm_context_builder(self.query, ref_result)
 
+    def debug_GenerateLLMContext(self):
+        return GenerateLLMContext(self.query)
+
+    def debug_prompt_generation(self):
+        return prompt_generation(self.query)
+
+    def debug_llm_generation(self):
+        llm_gen = LLMGeneration()
+        provider = llm_provider()
+        prompt = self.debug_prompt_generation()
+        return llm_gen.generate(provider, prompt)
+
 
 def main():
     # debug_ingest_file()
     query = input("Enter Query: ")
     limit = int(input("Enter Limit: "))
-    # query = "rpg"
-    # limit = 3
     debug_instance = Debug(query, limit)
     print(f"\nQuery: {query}")
-    print(debug_instance.debug_llm_context_builder())
-    # print(debug_instance.debug_refine_results())
     # print(debug_instance.debug_search_docs())
+    # print(debug_instance.debug_refine_results())
+    # print(debug_instance.debug_llm_context_builder())
+    # print(debug_instance.debug_GenerateLLMContext())
+    print(debug_instance.debug_llm_generation())
 
 
 if __name__ == "__main__":
