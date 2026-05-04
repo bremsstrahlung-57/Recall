@@ -119,7 +119,7 @@ class Lodestone:
             source = docs.get("source", "")
             score = docs.get("score", None)
             raw_ce = docs.get("cross_encoder_score", None)
-            cross_encoder_score = raw_ce.item() if raw_ce is not None else None
+            cross_encoder_score = raw_ce.item() if hasattr(raw_ce, "item") else raw_ce
             cross_norm = docs.get("cross_norm", None)
             normalized_score = docs.get("normalized_score", None)
             snippets = docs.get("all_chunks", [])

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
-import ravenLogo from "./assets/raven.svg";
 import "./App.css";
 
 const placeholders = [
@@ -35,6 +34,25 @@ export default function App() {
     );
 
     const [showSettings, setShowSettings] = useState(false);
+    const settingsRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                settingsRef.current &&
+                !settingsRef.current.contains(event.target as Node)
+            ) {
+                setShowSettings(false);
+            }
+        };
+
+        if (showSettings) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showSettings]);
     const [providers, setProviders] = useState<string[]>([]);
     const [selectedProvider, setSelectedProvider] = useState("");
     const [models, setModels] = useState<string[]>([]);
@@ -49,11 +67,20 @@ export default function App() {
         const saved = localStorage.getItem("rewriteQuery");
         return saved !== null ? saved === "true" : false;
     });
+    const [limit, setLimit] = useState(() => {
+        const saved = localStorage.getItem("limit");
+        return saved !== null ? parseInt(saved, 10) : 25;
+    });
+    const [k, setK] = useState(() => {
+        const saved = localStorage.getItem("k");
+        return saved !== null ? parseInt(saved, 10) : 50;
+    });
     const [results, setResults] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [expandedDocs, setExpandedDocs] = useState<Record<number, boolean>>(
         {},
     );
+    const [isIngesting, setIsIngesting] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [fullDocContent, setFullDocContent] = useState<string | null>(null);
     const [fullDocTitle, setFullDocTitle] = useState<string>("");
@@ -72,6 +99,7 @@ export default function App() {
     const uploadFile = async (file: File) => {
         const formData = new FormData();
         formData.append("file", file);
+        setIsIngesting(true);
 
         try {
             const res = await fetch(API_URL + "ingest", {
@@ -90,6 +118,8 @@ export default function App() {
         } catch (err) {
             console.error("Upload failed:", err);
             toast.error("Upload failed. Check console for details.");
+        } finally {
+            setIsIngesting(false);
         }
     };
 
@@ -131,6 +161,14 @@ export default function App() {
     useEffect(() => {
         localStorage.setItem("rewriteQuery", String(rewriteQuery));
     }, [rewriteQuery]);
+
+    useEffect(() => {
+        localStorage.setItem("limit", String(limit));
+    }, [limit]);
+
+    useEffect(() => {
+        localStorage.setItem("k", String(k));
+    }, [k]);
 
     // Fetch initial config and providers
     useEffect(() => {
@@ -270,6 +308,8 @@ export default function App() {
             query: text,
             mode: mode,
             rewrite_query: String(rewriteQuery),
+            limit: String(limit),
+            k: String(k),
         });
         if (selectedProvider) {
             params.append("provider", selectedProvider);
@@ -328,7 +368,7 @@ export default function App() {
                 <p>{health}</p>
             </div>
 
-            <div className="settings">
+            <div className="settings" ref={settingsRef}>
                 <button
                     onClick={() => setShowSettings(!showSettings)}
                     className="settingsToggle"
@@ -394,6 +434,43 @@ export default function App() {
                                 onChange={(e) => setApiKey(e.target.value)}
                             />
                             <button onClick={handleAddApiKey}>Save Key</button>
+                        </div>
+
+                        <div className="settingsGroup">
+                            <label>Limit (Docs to Return)</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value={limit}
+                                onChange={(e) =>
+                                    setLimit(parseInt(e.target.value) || 25)
+                                }
+                            />
+                        </div>
+
+                        <div className="settingsGroup">
+                            <label>K (Chunks to Retrieve)</label>
+                            <input
+                                type="number"
+                                min="1"
+                                max="100"
+                                value={k}
+                                onChange={(e) =>
+                                    setK(parseInt(e.target.value) || 50)
+                                }
+                            />
+                        </div>
+                        <div
+                            style={{
+                                fontSize: "0.85rem",
+                                fontStyle: "italic",
+                                opacity: 0.7,
+                                marginTop: "0.5rem",
+                            }}
+                        >
+                            Lower is faster but less accurate, and higher number
+                            is slower but more accurate.
                         </div>
                     </div>
                 )}
@@ -533,10 +610,10 @@ export default function App() {
                                 className="sendButton"
                             >
                                 <img
-                                    src={ravenLogo}
-                                    alt="Raven icon"
-                                    width="24"
-                                    height="24"
+                                    src="/raven.svg"
+                                    alt="Send"
+                                    width="20"
+                                    height="20"
                                 />
                             </button>
                         </div>
@@ -561,11 +638,12 @@ export default function App() {
                             </label>
                         </div>
                         <div
-                            className={`dropzoneContainer ${isDragging ? "active" : ""}`}
+                            className={`dropzoneContainer ${isDragging ? "active" : ""} ${isIngesting ? "ingesting" : ""}`}
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
                             onClick={() =>
+                                !isIngesting &&
                                 document.getElementById("fileInput")?.click()
                             }
                         >
@@ -573,8 +651,13 @@ export default function App() {
                                 type="file"
                                 id="fileInput"
                                 onChange={handleFileSelect}
+                                disabled={isIngesting}
                             />
-                            <p>Drop a file here or click to select</p>
+                            <p>
+                                {isIngesting
+                                    ? "Ingesting document..."
+                                    : "Drop a file here or click to select"}
+                            </p>
                         </div>
                     </>
                 )}

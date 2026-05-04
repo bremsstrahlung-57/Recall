@@ -5,23 +5,22 @@ import uuid
 from math import exp
 from statistics import mean
 
+from fastembed.rerank.cross_encoder import TextCrossEncoder
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.http import models
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.models import Distance, PointStruct, VectorParams
-from sentence_transformers import CrossEncoder
-from torch.cuda import is_available
 
 from app.core.settings import get_settings
 from app.db.sqlitedb import SQLiteDB
 from app.embeddings.minilm import embed
 
 logger = logging.getLogger(__name__)
-device = "cuda" if is_available() else "cpu"
+device = "cpu"
 _client: AsyncQdrantClient | None = None
 _collection_checked = False
 _doc_database = SQLiteDB()
-cross_encoder = CrossEncoder("cross-encoder/ms-marco-TinyBERT-L2-v2", device=device)
+cross_encoder = TextCrossEncoder(model_name="Xenova/ms-marco-MiniLM-L-6-v2")
 settings = get_settings()
 EMBEDDING_DIM = 384
 COLLECTION_NAME = "documents"
@@ -102,7 +101,7 @@ async def ensure_collection_exists(
 
 
 def _cross_encode_sync(pairs):
-    return cross_encoder.predict(pairs, batch_size=32, show_progress_bar=False)
+    return list(cross_encoder.rerank_pairs(pairs))
 
 
 async def cross_encode(pairs):

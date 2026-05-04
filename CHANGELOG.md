@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.14.0] - 2026-05-04
+
+### Added
+- Configurable `limit` and `k` parameters in the frontend UI settings.
+- Click-outside-to-close functionality for the frontend settings panel.
+- Loading indicator and disabled state during document ingestion.
+- Added `raven.svg` logo to frontend application and README.
+
+### Changed
+- Migrated embeddings and CrossEncoder to `fastembed`, replacing `sentence-transformers`. This removes `torch`/CUDA dependencies and significantly improves CPU inference performance.
+- Switched backend uvicorn port to `8091` inside the Docker container to match external mappings.
+- Adjusted `/search` endpoint defaults to `k=50` and `limit=25`.
+- Updated Documentation.
+
+---
+
 ## [0.13.0] - 2026-04-27
 
 ### Added

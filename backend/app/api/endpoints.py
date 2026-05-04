@@ -45,8 +45,8 @@ async def health_check():
 @router.get("/search")
 async def search_api(
     query: str = Query(..., min_length=3),
-    k: int = Query(5, ge=1),
-    limit: int = Query(50, ge=5),
+    k: int = Query(50, ge=1),
+    limit: int = Query(25, ge=1),
     mode: Literal["retrieval", "ai"] = Query("retrieval"),
     provider: Optional[LLMProvider] = Query(None),
     rewrite_query: bool = Query(False),
