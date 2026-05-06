@@ -116,6 +116,6 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 
 ## Credits
 
-- Logo: [Raven icon](https://www.svgrepo.com/) from SVG Repo
+- Logo: [Raven icon](https://www.svgrepo.com/svg/156257/raven) from SVG Repo
 
 ---
