@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="frontend/public/raven.svg" width="120" alt="Lodestone Logo" />
+<img src="frontend/public/raven.svg" width="67" alt="Lodestone Logo" />
 
 <h1>Lodestone</h1>
 
@@ -111,5 +111,11 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 
 - `~/.config/lodestone/config.toml` — general settings and defaults
 - `~/.config/lodestone/keys.toml` — API keys, gitignored by default
+
+---
+
+## Credits
+
+- Logo: [Raven icon](https://www.svgrepo.com/) from SVG Repo
 
 ---
