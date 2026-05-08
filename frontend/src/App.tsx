@@ -34,9 +34,13 @@ function sanitizeRetrievalValue(
     value: string | null,
     fallback: number,
 ): number {
-    const parsed = Number.parseInt(value ?? "", 10);
+    if (value === null || value.trim() === "") {
+        return fallback;
+    }
 
-    if (!Number.isFinite(parsed)) {
+    const parsed = Number.parseInt(value, 10);
+
+    if (Number.isNaN(parsed)) {
         return fallback;
     }
 
