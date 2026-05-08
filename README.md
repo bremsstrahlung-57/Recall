@@ -12,6 +12,8 @@
 
 <p>Lodestone is a local-first document retrieval system. Drop in files, query with natural language, get answers grounded in your documents. Everything runs on your machine.</p>
 
+> ⚠️ **Note**: Lodestone is currently in active development. You may encounter bugs or breaking changes.
+
 <img src="demos/lodestone_demo.gif" width="600" alt="Lodestone Demo GIF" />
 
 </div>
@@ -22,17 +24,20 @@
 
 The easiest way to install and run Lodestone is using the automated install script.
 
+> 💡 **Note**: Some antivirus software may flag or block the automated install script. If this happens, you can safely allow it.
+
 **Prerequisites**: Docker
+
+**macOS/Linux (Bash)**:
+```bash
+curl -sSL https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.sh | bash
+```
 
 **Windows (PowerShell)**:
 ```powershell
 iwr "https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.ps1" -OutFile "$env:TEMP\install.ps1"; powershell -ExecutionPolicy Bypass -File "$env:TEMP\install.ps1"
 ```
 
-**macOS/Linux (Bash)**:
-```bash
-curl -sSL https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.sh | bash
-```
 
 Open `http://localhost:8090`. Add your API key in Settings, drop in a file, and search.
 
