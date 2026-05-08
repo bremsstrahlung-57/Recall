@@ -88,6 +88,9 @@ export default function App() {
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
+        if (isIngesting) {
+            return;
+        }
         setIsDragging(true);
     };
 
@@ -126,6 +129,9 @@ export default function App() {
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
+        if (isIngesting) {
+            return;
+        }
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const file = e.dataTransfer.files[0];
             console.log("Uploading:", file.name);
