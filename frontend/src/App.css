@@ -426,6 +426,13 @@ body {
     background-color: color-mix(in srgb, var(--text-color) 5%, transparent);
 }
 
+.dropzoneContainer.ingesting {
+    opacity: 0.5;
+    cursor: wait;
+    border-color: var(--border-color);
+    background-color: transparent;
+}
+
 .dropzoneContainer input[type="file"] {
     display: none;
 }

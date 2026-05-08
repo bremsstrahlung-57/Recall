@@ -1,19 +1,19 @@
 import asyncio
 import logging
 
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
 logger = logging.getLogger(__name__)
-_model: SentenceTransformer | None = None
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+_model: TextEmbedding | None = None
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
-def get_model() -> SentenceTransformer:
+def get_model():
     """Creates instance for embedding model"""
     global _model
     if _model is None:
         logger.info("loading embedding model", extra={"model": EMBEDDING_MODEL})
-        _model = SentenceTransformer(EMBEDDING_MODEL)
+        _model = TextEmbedding(EMBEDDING_MODEL)
         logger.info("embedding model loaded", extra={"model": EMBEDDING_MODEL})
 
     return _model
@@ -21,8 +21,7 @@ def get_model() -> SentenceTransformer:
 
 def _embed_sync(text: str) -> list[float]:
     model = get_model()
-    embedding = model.encode(text, normalize_embeddings=True, show_progress_bar=False)
-    vector = embedding.tolist()
+    vector = list(model.embed([text]))[0].tolist()
     logger.debug(
         "text embedded", extra={"text_len": len(text), "vector_dim": len(vector)}
     )

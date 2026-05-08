@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
-import ravenLogo from "./assets/raven.svg";
 import "./App.css";
 
 const placeholders = [
@@ -26,6 +25,30 @@ const placeholders = [
     "You've seen this before.",
 ];
 const API_URL = "http://localhost:8091/api/";
+const MIN_RETRIEVAL_VALUE = 1;
+const MAX_RETRIEVAL_VALUE = 100;
+const DEFAULT_LIMIT = 25;
+const DEFAULT_K = 50;
+
+function sanitizeRetrievalValue(
+    value: string | null,
+    fallback: number,
+): number {
+    if (value === null || value.trim() === "") {
+        return fallback;
+    }
+
+    const parsed = parseInt(value, 10);
+
+    if (Number.isNaN(parsed)) {
+        return fallback;
+    }
+
+    return Math.min(
+        MAX_RETRIEVAL_VALUE,
+        Math.max(MIN_RETRIEVAL_VALUE, parsed),
+    );
+}
 
 export default function App() {
     const [health, setHealth] = useState<string>("Checking...");
@@ -35,6 +58,25 @@ export default function App() {
     );
 
     const [showSettings, setShowSettings] = useState(false);
+    const settingsRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                settingsRef.current &&
+                !settingsRef.current.contains(event.target as Node)
+            ) {
+                setShowSettings(false);
+            }
+        };
+
+        if (showSettings) {
+            document.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [showSettings]);
     const [providers, setProviders] = useState<string[]>([]);
     const [selectedProvider, setSelectedProvider] = useState("");
     const [models, setModels] = useState<string[]>([]);
@@ -49,11 +91,20 @@ export default function App() {
         const saved = localStorage.getItem("rewriteQuery");
         return saved !== null ? saved === "true" : false;
     });
+    const [limit, setLimit] = useState(() => {
+        const saved = localStorage.getItem("limit");
+        return sanitizeRetrievalValue(saved, DEFAULT_LIMIT);
+    });
+    const [k, setK] = useState(() => {
+        const saved = localStorage.getItem("k");
+        return sanitizeRetrievalValue(saved, DEFAULT_K);
+    });
     const [results, setResults] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [expandedDocs, setExpandedDocs] = useState<Record<number, boolean>>(
         {},
     );
+    const [isIngesting, setIsIngesting] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [fullDocContent, setFullDocContent] = useState<string | null>(null);
     const [fullDocTitle, setFullDocTitle] = useState<string>("");
@@ -61,6 +112,9 @@ export default function App() {
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
+        if (isIngesting) {
+            return;
+        }
         setIsDragging(true);
     };
 
@@ -72,6 +126,7 @@ export default function App() {
     const uploadFile = async (file: File) => {
         const formData = new FormData();
         formData.append("file", file);
+        setIsIngesting(true);
 
         try {
             const res = await fetch(API_URL + "ingest", {
@@ -90,12 +145,17 @@ export default function App() {
         } catch (err) {
             console.error("Upload failed:", err);
             toast.error("Upload failed. Check console for details.");
+        } finally {
+            setIsIngesting(false);
         }
     };
 
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
+        if (isIngesting) {
+            return;
+        }
         if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
             const file = e.dataTransfer.files[0];
             console.log("Uploading:", file.name);
@@ -131,6 +191,14 @@ export default function App() {
     useEffect(() => {
         localStorage.setItem("rewriteQuery", String(rewriteQuery));
     }, [rewriteQuery]);
+
+    useEffect(() => {
+        localStorage.setItem("limit", String(limit));
+    }, [limit]);
+
+    useEffect(() => {
+        localStorage.setItem("k", String(k));
+    }, [k]);
 
     // Fetch initial config and providers
     useEffect(() => {
@@ -270,6 +338,8 @@ export default function App() {
             query: text,
             mode: mode,
             rewrite_query: String(rewriteQuery),
+            limit: String(limit),
+            k: String(k),
         });
         if (selectedProvider) {
             params.append("provider", selectedProvider);
@@ -328,7 +398,7 @@ export default function App() {
                 <p>{health}</p>
             </div>
 
-            <div className="settings">
+            <div className="settings" ref={settingsRef}>
                 <button
                     onClick={() => setShowSettings(!showSettings)}
                     className="settingsToggle"
@@ -394,6 +464,53 @@ export default function App() {
                                 onChange={(e) => setApiKey(e.target.value)}
                             />
                             <button onClick={handleAddApiKey}>Save Key</button>
+                        </div>
+
+                        <div className="settingsGroup">
+                            <label>Limit (Docs to Return)</label>
+                            <input
+                                type="number"
+                                min={MIN_RETRIEVAL_VALUE}
+                                max={MAX_RETRIEVAL_VALUE}
+                                value={limit}
+                                onChange={(e) =>
+                                    setLimit(
+                                        sanitizeRetrievalValue(
+                                            e.target.value,
+                                            DEFAULT_LIMIT,
+                                        ),
+                                    )
+                                }
+                            />
+                        </div>
+
+                        <div className="settingsGroup">
+                            <label>K (Chunks to Retrieve)</label>
+                            <input
+                                type="number"
+                                min={MIN_RETRIEVAL_VALUE}
+                                max={MAX_RETRIEVAL_VALUE}
+                                value={k}
+                                onChange={(e) =>
+                                    setK(
+                                        sanitizeRetrievalValue(
+                                            e.target.value,
+                                            DEFAULT_K,
+                                        ),
+                                    )
+                                }
+                            />
+                        </div>
+                        <div
+                            style={{
+                                fontSize: "0.85rem",
+                                fontStyle: "italic",
+                                opacity: 0.7,
+                                marginTop: "0.5rem",
+                            }}
+                        >
+                            Lower is faster but less accurate, and higher number
+                            is slower but more accurate.
                         </div>
                     </div>
                 )}
@@ -533,10 +650,10 @@ export default function App() {
                                 className="sendButton"
                             >
                                 <img
-                                    src={ravenLogo}
-                                    alt="Raven icon"
-                                    width="24"
-                                    height="24"
+                                    src="/raven.svg"
+                                    alt="Send"
+                                    width="20"
+                                    height="20"
                                 />
                             </button>
                         </div>
@@ -561,11 +678,12 @@ export default function App() {
                             </label>
                         </div>
                         <div
-                            className={`dropzoneContainer ${isDragging ? "active" : ""}`}
+                            className={`dropzoneContainer ${isDragging ? "active" : ""} ${isIngesting ? "ingesting" : ""}`}
                             onDragOver={handleDragOver}
                             onDragLeave={handleDragLeave}
                             onDrop={handleDrop}
                             onClick={() =>
+                                !isIngesting &&
                                 document.getElementById("fileInput")?.click()
                             }
                         >
@@ -573,8 +691,13 @@ export default function App() {
                                 type="file"
                                 id="fileInput"
                                 onChange={handleFileSelect}
+                                disabled={isIngesting}
                             />
-                            <p>Drop a file here or click to select</p>
+                            <p>
+                                {isIngesting
+                                    ? "Ingesting document..."
+                                    : "Drop a file here or click to select"}
+                            </p>
                         </div>
                     </>
                 )}

@@ -1,8 +1,10 @@
 <div align="center">
 
+<img src="frontend/public/raven.svg" width="67" alt="Lodestone Logo" />
+
 <h1>Lodestone</h1>
 
-![Version](https://img.shields.io/badge/version-0.13.0-blue)
+![Version](https://img.shields.io/badge/version-0.14.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
@@ -109,5 +111,11 @@ Lodestone follows the XDG base directory spec. On first run, config files are cr
 
 - `~/.config/lodestone/config.toml` — general settings and defaults
 - `~/.config/lodestone/keys.toml` — API keys, gitignored by default
+
+---
+
+## Credits
+
+- Logo: [Raven icon](https://www.svgrepo.com/svg/156257/raven) from SVG Repo
 
 ---

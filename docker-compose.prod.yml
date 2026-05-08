@@ -12,9 +12,10 @@ services:
         image: ghcr.io/bremsstrahlung-57/lodestone-backend:latest
         container_name: lodestone_backend
         ports:
-            - "8091:8000"
+            - "8091:8091"
         depends_on:
-            - qdrant
+            qdrant:
+                condition: service_started
         environment:
             - QDRANT_URL=http://qdrant:6333
         volumes:
