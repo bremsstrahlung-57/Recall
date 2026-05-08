@@ -25,6 +25,26 @@ const placeholders = [
     "You've seen this before.",
 ];
 const API_URL = "http://localhost:8091/api/";
+const MIN_RETRIEVAL_VALUE = 1;
+const MAX_RETRIEVAL_VALUE = 100;
+const DEFAULT_LIMIT = 25;
+const DEFAULT_K = 50;
+
+function sanitizeRetrievalValue(
+    value: string | null,
+    fallback: number,
+): number {
+    const parsed = Number.parseInt(value ?? "", 10);
+
+    if (!Number.isFinite(parsed)) {
+        return fallback;
+    }
+
+    return Math.min(
+        MAX_RETRIEVAL_VALUE,
+        Math.max(MIN_RETRIEVAL_VALUE, parsed),
+    );
+}
 
 export default function App() {
     const [health, setHealth] = useState<string>("Checking...");
@@ -69,11 +89,11 @@ export default function App() {
     });
     const [limit, setLimit] = useState(() => {
         const saved = localStorage.getItem("limit");
-        return saved !== null ? parseInt(saved, 10) : 25;
+        return sanitizeRetrievalValue(saved, DEFAULT_LIMIT);
     });
     const [k, setK] = useState(() => {
         const saved = localStorage.getItem("k");
-        return saved !== null ? parseInt(saved, 10) : 50;
+        return sanitizeRetrievalValue(saved, DEFAULT_K);
     });
     const [results, setResults] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -446,11 +466,16 @@ export default function App() {
                             <label>Limit (Docs to Return)</label>
                             <input
                                 type="number"
-                                min="1"
-                                max="100"
+                                min={MIN_RETRIEVAL_VALUE}
+                                max={MAX_RETRIEVAL_VALUE}
                                 value={limit}
                                 onChange={(e) =>
-                                    setLimit(parseInt(e.target.value) || 25)
+                                    setLimit(
+                                        sanitizeRetrievalValue(
+                                            e.target.value,
+                                            DEFAULT_LIMIT,
+                                        ),
+                                    )
                                 }
                             />
                         </div>
@@ -459,11 +484,16 @@ export default function App() {
                             <label>K (Chunks to Retrieve)</label>
                             <input
                                 type="number"
-                                min="1"
-                                max="100"
+                                min={MIN_RETRIEVAL_VALUE}
+                                max={MAX_RETRIEVAL_VALUE}
                                 value={k}
                                 onChange={(e) =>
-                                    setK(parseInt(e.target.value) || 50)
+                                    setK(
+                                        sanitizeRetrievalValue(
+                                            e.target.value,
+                                            DEFAULT_K,
+                                        ),
+                                    )
                                 }
                             />
                         </div>
