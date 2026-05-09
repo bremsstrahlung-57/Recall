@@ -4,7 +4,7 @@
 
 <h1>Lodestone</h1>
 
-![Version](https://img.shields.io/badge/version-0.14.0-blue)
+![Version](https://img.shields.io/badge/version-0.15.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
 ![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
@@ -12,7 +12,7 @@
 
 <p>Lodestone is a local-first document retrieval system. Drop in files, query with natural language, get answers grounded in your documents. Everything runs on your machine.</p>
 
-> ⚠️ **Note**: Lodestone is currently in active development. You may encounter bugs or breaking changes.
+> ⚠️ **Note**: Lodestone is under active development, so breaking changes and rough edges are still possible.
 
 <img src="demos/lodestone_demo.gif" width="600" alt="Lodestone Demo GIF" />
 
@@ -22,12 +22,28 @@
 
 ## Quickstart
 
-The easiest way to install and run Lodestone is using the automated install script.
-
-> 💡 **Note**: Some antivirus software may flag or block the automated install script. If this happens, you can safely allow it.
+The easiest way to run Lodestone is with the Docker-based setup and the Lodestone CLI.
 
 **Prerequisites**: Docker
 
+**Install the CLI globally**:
+
+```bash
+npm install -g lodestone-r
+```
+**Start Lodestone**:
+```bash
+lodestone start
+```
+**Open**:
+```bash
+http://localhost:8090
+```
+Then add your API key in Settings, drop in a file, and search.
+
+> 💡 Note: On Linux, you may need `sudo npm install -g lodestone-r` if your npm global directory is system-managed. Using nvm avoids that nonsense.
+
+**Other ways**:
 **macOS/Linux (Bash)**:
 ```bash
 curl -sSL https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.sh | bash
@@ -38,6 +54,9 @@ curl -sSL https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/i
 iwr "https://raw.githubusercontent.com/bremsstrahlung-57/lodestone/master/install.ps1" -OutFile "$env:TEMP\install.ps1"; powershell -ExecutionPolicy Bypass -File "$env:TEMP\install.ps1"
 ```
 
+> 💡 **Note**: Some antivirus software may flag or block the automated install script. If this happens, you can safely allow it.
+
+
 
 Open `http://localhost:8090`. Add your API key in Settings, drop in a file, and search.
 
@@ -45,14 +64,14 @@ Open `http://localhost:8090`. Add your API key in Settings, drop in a file, and 
 
 ## CLI Commands
 
-The install script automatically installs the `lodestone` CLI wrapper to `~/.local/bin` for easily managing your local instance:
+Lodestone provides a CLI wrapper for managing your local instance:
 
-- `lodestone start` — Start the Lodestone containers
-- `lodestone stop` — Stop the Lodestone containers
-- `lodestone update` — Fetch latest configurations and CLI wrapper, pull new Docker images, and restart
+- `lodestone start` — Download the latest compose config and start the containers
+- `lodestone stop` — Stop the containers
+- `lodestone update` — Fetch the latest configuration, pull new Docker images, and restart
 - `lodestone logs` — Tail the container logs
-- `lodestone delete` — Stop containers and remove local images (keeps data and volumes)
-- `lodestone prune` — Completely wipe containers, images, volumes, and installation data (keeps user config)
+- `lodestone delete` — Stop containers and remove local images, while keeping data and volumes
+- `lodestone prune` — Completely remove containers, images, volumes, and installation data, while keeping config
 
 ---
 
@@ -91,7 +110,7 @@ Ingested documents are chunked, embedded with MiniLM-L6-v2, and stored in a loca
 
 If you want to run Lodestone from source for development:
 
-**Prerequisites**: Python 3.12+, Node.js, Docker
+**Prerequisites**: Python 3.12+, Node.js 18+, Docker
 
 ```bash
 # Start Qdrant

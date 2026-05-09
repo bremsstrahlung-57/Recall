@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [0.15.0] - 2026-05-09
+
+### Added
+- Initial release of the Lodestone CLI npm package.
+
+---
+
 ## [0.14.0] - 2026-05-04
 
 ### Added
