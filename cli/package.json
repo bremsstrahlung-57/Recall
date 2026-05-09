@@ -1,0 +1,32 @@
+{
+    "name": "lodestone-r",
+    "version": "0.15.0",
+    "description": "CLI for Lodestone - Local-first document retrieval system",
+    "main": "index.js",
+    "bin": {
+        "lodestone": "index.js"
+    },
+    "type": "commonjs",
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "lodestone",
+        "rag",
+        "qdrant",
+        "llm"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/bremsstrahlung-57/lodestone.git"
+    },
+    "author": "Sagar Sharma",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/bremsstrahlung-57/lodestone/issues"
+    },
+    "homepage": "https://github.com/bremsstrahlung-57/lodestone#readme"
+}
