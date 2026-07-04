@@ -4,10 +4,10 @@
 
 <h1>Lodestone</h1>
 
+[![npm downloads](https://img.shields.io/npm/dt/lodestone-r)](https://www.npmjs.com/package/lodestone-r)
 ![Version](https://img.shields.io/badge/version-0.15.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/status-active-brightgreen)
-![GitHub stars](https://img.shields.io/github/stars/bremsstrahlung-57/lodestone)
 ![Last commit](https://img.shields.io/github/last-commit/bremsstrahlung-57/lodestone)
 
 <p>Lodestone is a local-first document retrieval system. Drop in files, query with natural language, get answers grounded in your documents. Everything runs on your machine.</p>
